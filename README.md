@@ -481,7 +481,7 @@ def comparar_lista_vs_array(valores_lista):
 
 #### `filtrar_valores_en_rango(valores_lista, minimo, maximo)`
 
-Esta función retoma el ejercicio de listas que no llegamos a cubrir en la sesión 3: recorrer una lista con un ciclo y un condicional para quedarte solo con los valores dentro de un rango. Verla aquí, antes de los arrays booleanos de la sección 5, te deja comparar de primera mano cómo cambia el mismo problema cuando lo resuelves con NumPy.
+Esta función retoma el ejercicio de listas para recorrer una lista con un ciclo y un condicional para quedarte solo con los valores dentro de un rango. Verla aquí, antes de los arrays booleanos de la sección 5, te deja comparar de primera mano cómo cambia el mismo problema cuando lo resuelves con NumPy.
 
 ```python
 def filtrar_valores_en_rango(valores_lista, minimo, maximo):
@@ -528,15 +528,7 @@ python main.py
 
 Selecciona opción `1` y verifica la salida.
 
-### Ejercicios — Sección 1
-
-**Básico:** ¿Qué pasa si creas un array con `dtype=np.int32` y lo llenas con valores que tienen decimales, por ejemplo `[1.7, 2.3, 3.9]`? Pruébalo y describe lo que ocurre.
-
-**Intermedio:** Crea en la terminal interactiva un array con los NIT como strings: `np.array(NITS)`. ¿Qué dtype le asigna NumPy automáticamente? ¿Por qué no conviene usar NumPy para texto en este análisis?
-
-**Avanzado:** Investiga `arr.nbytes`. ¿Cuántos bytes ocupa `VALORES_DECLARADOS` con `dtype=np.float64`? ¿Y si usaras `dtype=np.float32`? ¿Qué compromiso implica reducir la precisión en datos monetarios?
-
-### Commit de sección
+## 🔁 Ciclo Git
 
 ```bash
 git add src/numpy_utils.py
@@ -546,8 +538,6 @@ git push
 
 ---
 ## Sección 2 — Indexación y slicing
-
-**⏱ Tiempo estimado: 20 min**
 
 ### Indexación básica
 
