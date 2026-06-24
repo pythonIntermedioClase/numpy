@@ -1,4 +1,4 @@
-# Sesión 4: NumPy
+# Sesión 4 y 5: Listas y NumPy
 
 **Python Intermedio para Análisis de Datos — DIAN 2026**
 
@@ -78,7 +78,6 @@ Cada repositorio necesita su propio Codespace. El Codespace de la sesión 2-3 si
 3. Cuando veas el editor con la terminal integrada, estás listo.
 
 ### 0.3 Revisar la estructura del proyecto
-``
 
 > **¿Para qué sirve cada parte?**
 > - `src/numpy_utils.py`, las funciones que vas a implementar hoy.
@@ -718,7 +717,7 @@ copia[0] = 0
 print(arr)   # [100 999 300 400 500]  ← arr no cambió
 ```
 
-### Punto de fallo #4 — modificar una vista sin darse cuenta
+### Punto de fallo  — modificar una vista sin darse cuenta
 
 Este es el error que más duele: el código corre limpio y los datos cambian sin ningún aviso.
 
@@ -845,17 +844,7 @@ git add src/numpy_utils.py
 git commit -m "sesion-04: sec-2 indexacion y slicing"
 git push
 ```
-
----
-
-## Pausa
-
-**⏱ 15 min**
-
----
 ## Sección 3 — Vectorización
-
-**⏱ Tiempo estimado: 25 min**
 
 ### ¿Qué es la vectorización?
 
@@ -888,44 +877,61 @@ El núcleo de NumPy está escrito en C. Cuando escribes `arr * 0.19`, Python le 
 Además de usar C, NumPy guarda los datos en **memoria contigua**: todos los valores del array están uno al lado del otro en la RAM, sin saltos. Una lista de Python, en cambio, guarda referencias dispersas: la dirección de memoria de cada elemento. El procesador tiene que ir a buscar cada valor por separado. Con un array contiguo, puede cargar varios valores a la vez en su caché y operar sobre ellos en paralelo.
 
 ### Benchmark: ver la diferencia con tus propios ojos
+Antes de implementar las funciones de la sección, mide la diferencia real entre calcular el IVA con un ciclo `for` y con NumPy vectorizado:
 
-Antes de implementar las funciones, ejecuta este script para medir la diferencia real entre las dos formas de calcular el IVA de un millón de declaraciones:
+1. Abre `main.py`.
+2. Justo debajo de los `import` (antes de las funciones `menu_...`), pega esta función:
 
 ```python
-import time
-import numpy as np
+def medir_diferencia_vectorizacion(n=1_000_000):
+    """
+    Compara el tiempo de calcular el IVA con un ciclo for vs. con NumPy.
 
-N = 1_000_000
-lista = []
-for i in range(N):
-    lista.append(float(i * 1000))
+    Construye una lista de n valores, calcula el IVA (valor * 0.19) con un
+    ciclo for sobre la lista y con una operación vectorizada sobre el array
+    equivalente, e imprime el tiempo de cada enfoque.
 
-arr = np.array(lista, dtype=np.float64)
+    Args:
+        n (int): Cantidad de declaraciones a simular. Por defecto 1.000.000.
 
-# --- Con ciclo for sobre lista ---
-inicio = time.time()
-iva_lista = []
-for valor in lista:
-    iva_lista.append(valor * 0.19)
-tiempo_lista = time.time() - inicio
+    Ejemplo:
+        medir_diferencia_vectorizacion()
+        -> imprime el tiempo de cada enfoque y cuántas veces más rápido es NumPy.
+    """
+    lista = []
+    for i in range(n):
+        lista.append(float(i * 1000))
+    arr = np.array(lista, dtype=np.float64)
 
-# --- Con vectorización NumPy ---
-inicio = time.time()
-iva_array = arr * 0.19
-tiempo_numpy = time.time() - inicio
+    # --- Con ciclo for sobre lista ---
+    inicio = time.time()
+    iva_lista = []
+    for valor in lista:
+        iva_lista.append(valor * 0.19)
+    tiempo_lista = time.time() - inicio
 
-print(f"Lista + ciclo for : {tiempo_lista:.4f} s")
-print(f"Array NumPy       : {tiempo_numpy:.4f} s")
-print(f"NumPy es {tiempo_lista / tiempo_numpy:.0f}x más rápido")
+    # --- Con vectorización NumPy ---
+    inicio = time.time()
+    iva_array = arr * 0.19
+    tiempo_numpy = time.time() - inicio
+
+    print(f"Lista + ciclo for : {tiempo_lista:.4f} s")
+    print(f"Array NumPy       : {tiempo_numpy:.4f} s")
+    print(f"NumPy es {tiempo_lista / tiempo_numpy:.0f}x más rápido")
 ```
 
-Salida típica (puede variar según el equipo):
+3. Al inicio del archivo, junto a `import numpy as np`, agrega `import time` (lo necesita la función para medir el tiempo).
+4. Busca la línea `if __name__ == "__main__":` al final del archivo y, justo antes de `main()`, agrega la llamada:
 
+```python
+if __name__ == "__main__":
+    medir_diferencia_vectorizacion()
+    main()
 ```
-Lista + ciclo for : 0.0821 s
-Array NumPy       : 0.0018 s
-NumPy es 46x más rápido
-```
+
+5. Ejecuta:
+
+6. Observa la salida antes de que aparezca el menú. Salida típica (puede variar según el equipo):
 
 > **¿Por qué importa?**  
 > Un archivo de declaraciones puede tener varios millones de registros. Si cada operación tarda 80 ms con ciclo y 2 ms con NumPy, la diferencia total en un pipeline completo de 20 operaciones es la diferencia entre esperar 1,6 segundos o 40 milisegundos, en cada ejecución, varias veces al día.
@@ -953,7 +959,7 @@ ajustados = valores * factor
 print(ajustados)   # [1000000.  450000. 2200000.]
 ```
 
-### Cuando el resultado no cuadra: verificar con muestra manual
+### Cuando verificar con muestra manual
 
 La velocidad de NumPy tiene un costo de visibilidad: una operación que procesa miles de registros no te muestra qué hizo con cada uno. Si el resultado parece incorrecto, valores negativos donde no deberían existir, totales que no cierran, `nan` inesperados, el ciclo `for` de sesión 3 es la herramienta de diagnóstico que necesitas.
 
