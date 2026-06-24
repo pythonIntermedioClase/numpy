@@ -148,7 +148,6 @@ Codespaces a veces instala extensiones recomendadas de forma automática, pero c
 2. Busca **Python**, la extensión publicada por Microsoft, y haz clic en **Install** si todavía no aparece instalada.
 
 > **¿Por qué importa esto?** Sin estas extensiones, el editor trata el código Python como texto plano: no resalta errores de sintaxis, no sugiere autocompletado y no detecta a qué entorno virtual está apuntando.
-
 ---
 
 ## De dónde viene NumPy
@@ -210,31 +209,116 @@ La diferencia es de escala: una herramienta para procesar un elemento a la vez, 
 ## Sección 1 — Arrays y tipos de datos
 
 ### Antes de empezar: repaso rápido de listas
+En la sesión 3 no llegamos a cubrir listas a fondo, así que antes de meternos con arrays, repasemos lo que vas a necesitar para seguir el resto de la sesión.
 
-En la sesión 3 no llegamos a cubrir listas, así que antes de meternos con arrays, repasemos lo mínimo que necesitas para seguir el resto de la sesión.
+**Qué es una lista, en la práctica**
 
-Una lista se crea con corchetes y puede crecer agregando elementos con `.append()`:
+Una lista se crea con corchetes y guarda una secuencia ordenada de elementos:
+
+```python
+valores = [1_500_000, 850_000, 2_300_000]
+```
+
+Tres características la definen:
+
+- **Es ordenada.** Cada elemento ocupa una posición fija hasta que algo la cambie. `valores[0]` siempre va a ser el primer elemento que agregaste, en ese orden.
+- **Es mutable.** Puedes agregar, quitar o reemplazar elementos después de creada la lista, sin construir una lista nueva desde cero.
+- **Acepta tipos mezclados.** Una misma lista puede contener números, texto y booleanos a la vez: `[1, "hola", True]` es válido para Python. En la práctica casi siempre vas a trabajar con listas de un solo tipo, pero vale la pena saber que la mezcla no produce un error.
+
+**Funciones y métodos que vas a usar todo el tiempo como científico de datos**
+
+| Operación | Sintaxis | Qué hace |
+|---|---|---|
+| Tamaño | `len(valores)` | Cuenta cuántos elementos tiene la lista |
+| Agregar al final | `valores.append(x)` | Agrega `x` como último elemento |
+| Insertar en una posición | `valores.insert(i, x)` | Agrega `x` en la posición `i`, desplazando el resto un lugar |
+| Quitar por valor | `valores.remove(x)` | Elimina la primera aparición de `x` |
+| Quitar por posición | `valores.pop(i)` | Elimina el elemento en la posición `i` y lo retorna |
+| Ordenar | `valores.sort()` / `sorted(valores)` | `.sort()` ordena la lista original y no retorna nada útil; `sorted()` retorna una lista nueva y deja la original intacta |
+| Contar apariciones | `valores.count(x)` | Cuenta cuántas veces aparece `x` en la lista |
+| Encontrar una posición | `valores.index(x)` | Retorna la posición de la primera aparición de `x` |
+| Suma, mínimo, máximo | `sum(valores)`, `min(valores)`, `max(valores)` | Funciones integradas de Python, no métodos de la lista |
 
 ```python
 valores = [1_500_000, 850_000, 2_300_000]
 valores.append(950_000)
-print(valores)   # [1500000, 850000, 2300000, 950000]
+print(valores)          # [1500000, 850000, 2300000, 950000]
+
+total = sum(valores)
+print(total)             # 5600000
+
+valores.sort()
+print(valores)           # [850000, 950000, 1500000, 2300000]
 ```
+
+La distinción entre `.sort()` y `sorted()` . `.sort()` modifica la lista original "en el lugar" y la otra no toca nada y te entrega una copia ordenada.
+
+**Indexar y recortar (slicing)**
 
 Cada elemento tiene una posición, contada desde 0. Para acceder a un elemento puntual usas `lista[posición]`:
 
 ```python
+valores = [1_500_000, 850_000, 2_300_000]
+
 print(valores[0])    # 1500000, el primer elemento
-print(valores[-1])   # 950000, el último elemento
+print(valores[-1])   # 2300000, el último elemento (índice negativo: cuenta desde el final)
+print(valores[-2])   # 850000, el penúltimo elemento
 ```
 
 Para tomar un pedazo de la lista usas slicing: dos posiciones separadas por dos puntos, donde la primera es inclusiva y la segunda es exclusiva.
 
 ```python
-print(valores[1:3])  # [850000, 2300000], posiciones 1 y 2
+print(valores[0:2])  # [1500000, 850000], posiciones 0 y 1
+print(valores[1:])   # [850000, 2300000], desde la posición 1 hasta el final
+print(valores[:2])   # [1500000, 850000], desde el inicio hasta antes de la posición 2
 ```
 
-Los arrays de NumPy retoman exactamente esta misma notación de índices y slices, solo que con otras capacidades por debajo. Con esto ya puedes seguir el resto de la sección.
+El slicing acepta un tercer número opcional, el paso:
+
+```python
+print(valores[::2])   # [1500000, 2300000], un elemento sí y uno no
+print(valores[::-1])  # [2300000, 850000, 1500000], la lista invertida
+```
+
+**Recorrer una lista: dos formas**
+
+La forma más directa recorre los elementos mismos:
+
+```python
+for valor in valores:
+    print(valor)
+# 1500000
+# 850000
+# 2300000
+```
+
+En cada vuelta del ciclo, `valor` toma el contenido de una posición distinta. No tienes acceso directo a en qué posición estás parado, solo al contenido.
+
+La otra forma recorre las posiciones, usando `range(len(...))`:
+
+```python
+for i in range(len(valores)):
+    print(i, valores[i])
+# 0 1500000
+# 1 850000
+# 2 2300000
+```
+
+Aquí `i` es un número entero que avanza de 0 hasta `len(valores) - 1`. `valores[i]` te da el elemento en esa posición. Esta forma es más larga de escribir, pero se vuelve necesaria cuando el índice importa por sí mismo: por ejemplo, si necesitas comparar cada elemento con el siguiente, o si vas a modificar la lista original en esa misma posición (`valores[i] = valores[i] * 1.19`), algo que el primer ciclo no permite hacer directamente.
+
+Hay un punto medio entre las dos formas: `enumerate()` te entrega la posición y el valor al mismo tiempo, sin que tengas que escribir `valores[i]` para conseguir el valor.
+
+```python
+for i, valor in enumerate(valores):
+    print(i, valor)
+# 0 1500000
+# 1 850000
+# 2 2300000
+```
+
+En la práctica: si solo necesitas el valor, usa `for valor in valores`. Si necesitas la posición y el valor juntos, usa `enumerate()`. Reserva `range(len(...))` para los casos en los que de verdad vas a modificar la lista original por posición.
+
+Los arrays de NumPy retoman exactamente esta misma notación de índices, slices y recorridos, solo que con otras capacidades por debajo.
 
 ### ¿Por qué NumPy?
 
@@ -322,29 +406,7 @@ print(valores.shape)  # (4,)
 >
 > ¿Por qué varias dimensiones? Porque los datos reales tienen estructura. Un array plano de 8 valores declarados tiene `shape = (8,)`. Una tabla con 100 declaraciones y 8 columnas de atributos tendría `shape = (100, 8)`, eso son las matrices que usarás cuando llegues a pandas. Por ahora solo trabajamos con una dimensión.
 
-### Punto de fallo #1 — olvidar `dtype` con decimales
-
-Prueba esto en la terminal y observa la diferencia:
-
-```python
-import numpy as np
-
-# Sin dtype: NumPy infiere int64 (entero) porque todos los valores son enteros
-valores_sin_tipo = np.array([1_500_000, 850_000, 0, 2_300_000])
-print(valores_sin_tipo.dtype)   # int64
-print(valores_sin_tipo * 0.19)
-# [285000.  161500.       0.  437000.]  ← el resultado es float, pero el array original es int
-
-# Con dtype=float64: el array ya es decimal desde el inicio
-valores_con_tipo = np.array([1_500_000, 850_000, 0, 2_300_000], dtype=np.float64)
-print(valores_con_tipo.dtype)   # float64
-print(valores_con_tipo)
-# [1500000.   850000.        0.  2300000.]
-```
-
-El resultado de `* 0.19` es correcto en ambos casos porque Python convierte automáticamente, pero si luego intentas guardar el resultado de vuelta en el mismo array con `valores_sin_tipo[:] = valores_sin_tipo * 0.19`, los decimales se truncarán a enteros. Declarar `float64` desde el inicio es la práctica segura.
-
-### Punto de fallo #2 — tipos mezclados en un array
+### Punto de fallo — tipos mezclados en un array
 
 ```python
 # ¿Qué pasa si mezclas números y texto?
